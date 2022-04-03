@@ -1,5 +1,3 @@
-#!/bin/sh
-
 SRCS_CLIENT = \
 	SocketClientTest.cpp \
 
@@ -13,7 +11,7 @@ LIB_PATH = \
 	-L../lib \
 
 USER_LIBS = \
-	-lSocket \
+	-lSimpleSocket \
 
 OBJ_DIR = ./obj
 OBJS_CLIENT = $(SRCS_CLIENT:%.cpp=$(OBJ_DIR)/%.o)
