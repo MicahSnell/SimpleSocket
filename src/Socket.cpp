@@ -22,27 +22,26 @@
 Socket::Socket (int portNum, eProtocol protocol)
   : mPort (portNum),
     mProtocol (protocol),
-    mSocketFD (-1),
+    mSocketFD (CreateSocket ()),
     mIsConnected (false),
     mIsHostSocket (mHostname.empty ())
 {
   try {
+    if (mSocketFD == -1) {
+      throw std::runtime_error ("Socket: failed to get file descriptor");
+    }
+
     switch (mProtocol) {
     case TCP:
-      mSocketFD = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
       BindSocket (mPort);
+      mIsConnected = false;
       break;
     case UDP:
-      mSocketFD = socket (AF_INET, SOCK_DGRAM, IPPROTO_UDP);
       mIsConnected = (BindSocket (mPort) == 0);
       break;
     default:
-      throw std::runtime_error ("Socket: unknown connection type");
+      throw std::runtime_error ("Socket: unknown protocol");
       break;
-    }
-
-    if (mSocketFD == -1) {
-      throw std::runtime_error ("Socket: failed to get file descriptor");
     }
 
     #ifdef DEBUG
@@ -66,28 +65,15 @@ Socket::Socket (std::string hostStr, int portNum, eProtocol protocol)
   : mHostname (hostStr),
     mPort (portNum),
     mProtocol (protocol),
-    mSocketFD (-1),
-    mIsConnected (false),
+    mSocketFD (CreateSocket ()),
+    mIsConnected (mProtocol == UDP),
     mIsHostSocket (mHostname.empty ())
 {
   try {
-    switch (mProtocol) {
-    case TCP:
-      mSocketFD = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
-      break;
-    case UDP:
-      mSocketFD = socket (AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-      mIsConnected = true;
-      break;
-    default:
-      throw std::runtime_error ("Socket: unknown connection type");
-      break;
-    }
-
     if (mSocketFD == -1) {
       throw std::runtime_error ("Socket: failed to get file descriptor");
     }
-    
+
     // get host info and set in sockaddr_in struct
     hostent *hostEntry = gethostbyname (mHostname.c_str ());
     if (hostEntry == nullptr) {
@@ -114,7 +100,7 @@ Socket::Socket (std::string hostStr, int portNum, eProtocol protocol)
  */
 Socket::~Socket ()
 {
-  close (mSocketFD);
+  CloseSocket ();
 }
 
 /**
@@ -123,13 +109,19 @@ Socket::~Socket ()
  */
 bool Socket::ConnectSocket ()
 {
+  // socket was closed due to send/recv error, recreate
+  if (mSocketFD == -1) {
+    mSocketFD = CreateSocket ();
+    if (mIsHostSocket) {
+      BindSocket (mPort);
+    }
+  }
+
   switch (mProtocol) {
   case TCP:
-    if (mIsHostSocket) {
-      mIsConnected = ListenAndAccept ();
-    } else {
-      mIsConnected = (connect (mSocketFD, (sockaddr *) &mHostInfo, sizeof (mHostInfo)) == 0);
-    }
+    mIsConnected = mIsHostSocket ?
+      ListenAndAccept () :
+      connect (mSocketFD, (sockaddr *) &mHostInfo, sizeof (mHostInfo)) == 0;
     break;
   case UDP:
     mIsConnected = true;
@@ -138,6 +130,13 @@ bool Socket::ConnectSocket ()
     std::cerr << "Socket::ConnectSocket: unknown protocol, doing nothing\n";
     break;
   }
+
+  #ifdef DEBUG
+  if (IsNotConnected ()) {
+    perror ("Socket::ConnectSocket: failed to connect");
+  }
+  #endif
+
   return mIsConnected;
 }
 
@@ -151,29 +150,26 @@ bool Socket::Send (const void *buffer, int numBytes)
 {
   bool isSuccess = true;
   try {
+    int numBytesSent = -1;
     switch (mProtocol) {
     case TCP:
-      if (send (mSocketFD, (char *) buffer, numBytes, MSG_NOSIGNAL) == -1) {
-        std::cerr << "Socket::Send: failed to send\n";
-        isSuccess = false;
-      }
+      numBytesSent = send (mSocketFD, (char *) buffer, numBytes, MSG_NOSIGNAL);
       break;
     case UDP:
-      {
-        int numBytesSent =
-          sendto (mSocketFD, (char *) buffer, numBytes, 0, (sockaddr *) &mHostInfo,
-                  sizeof (mHostInfo ));
-
-        if (numBytesSent == -1) {
-          std::cerr << "Socket::Send: failed to send\n";
-          isSuccess = false;
-        }
-      }
+      numBytesSent = sendto (mSocketFD, (char *) buffer, numBytes, 0, (sockaddr *) &mHostInfo,
+                             sizeof (mHostInfo ));
       break;
     default:
       std::cerr << "Socket::Send: unknown protocol, doing nothing\n";
       isSuccess = false;
       break;
+    }
+
+    // if send returns error, of if TCP and sent 0, close to reconnect
+    if ((numBytesSent == -1) || ((mProtocol == TCP) && (numBytesSent == 0))) {
+      std::cerr << "Socket::Send: failed to send\n";
+      CloseSocket ();
+      isSuccess = false;
     }
   } catch (std::exception &except) {
     std::cerr << __FILE__ << ":" << __LINE__ << " caught exception: " << except.what ()
@@ -193,18 +189,23 @@ bool Socket::Recv (void *buffer, int numBytes)
 {
   bool isSuccess = true;
   try {
+    int numBytesRead = -1;
     switch (mProtocol) {
     case TCP:
     case UDP:
-      if (read (mSocketFD, (char *) buffer, numBytes) == -1) {
-        std::cerr << "Socket::Recv: failed to read\n";
-        isSuccess = false;
-      }
+      numBytesRead = read (mSocketFD, (char *) buffer, numBytes);
       break;
     default:
       std::cerr << "Socket::Recv: unknown protocol, doing nothing\n";
       isSuccess = false;
       break;
+    }
+
+    // if read returns error, or if TCP and read 0 close to reconnect
+    if ((numBytesRead == -1) || ((mProtocol == TCP) && (numBytesRead == 0))) {
+      std::cerr << "Socket::Recv: failed to read\n";
+      CloseSocket ();
+      isSuccess = false;
     }
   } catch (std::exception &except) {
     std::cerr << __FILE__ << ":" << __LINE__ << " caught exception: " << except.what ()
@@ -212,6 +213,27 @@ bool Socket::Recv (void *buffer, int numBytes)
     isSuccess = false;
   }
   return isSuccess;
+}
+
+/**
+ * @brief creates a socket based on the mProtocol
+ * @return integer of the file descriptor for the created socket
+ */
+int Socket::CreateSocket ()
+{
+  int sockFD = -1;
+  switch (mProtocol) {
+  case TCP:
+    sockFD = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    break;
+  case UDP:
+    sockFD = socket (AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    break;
+  default:
+    std::cerr << "Socket::CreateSocket: unknown protocol\n";
+    break;
+  }
+  return sockFD;
 }
 
 /**
@@ -230,20 +252,13 @@ int Socket::BindSocket (int portNum)
 }
 
 /**
- * @brief sets options for socketFD based on protocol
- * @param socketFD the file descriptor for the socket
+ * @brief closes the socket and sets as not connected
  */
-void Socket::SetSocketOptions (int socketFD)
+void Socket::CloseSocket ()
 {
-  switch (mProtocol) {
-  case TCP:
-    break;
-  case UDP:
-    break;
-  default:
-    std::cerr << "Socket::setSocketOptions: unknown protocol, doing nothing\n";
-    break;
-  }
+  close (mSocketFD);
+  mSocketFD = -1;
+  mIsConnected = false;
 }
 
 /**
@@ -252,8 +267,6 @@ void Socket::SetSocketOptions (int socketFD)
  */
 bool Socket::ListenAndAccept ()
 {
-  
-
   if (listen (mSocketFD, 5) == -1) {
     std::cerr << "Socket::ListenAndAccept: listen failed\n";
     return false;

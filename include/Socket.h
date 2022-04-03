@@ -49,11 +49,14 @@ public:
     { return !mIsConnected; }
 
 private:
+  // creates a socket and stores the file descriptor in mSocketFD
+  int CreateSocket ();
+
   // binds mSocketFD to port
   int BindSocket (int portNum);
 
-  // sets socket options
-  void SetSocketOptions (int socketFD);
+  // closes the socket
+  void CloseSocket ();
 
   // listens and accepts TCP connections
   bool ListenAndAccept ();
