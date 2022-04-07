@@ -3,3 +3,7 @@
 
 # backup files
 *~
+
+# executables
+example/socket_client
+example/socket_server
