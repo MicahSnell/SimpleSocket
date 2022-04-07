@@ -10,6 +10,9 @@
 
 #include <arpa/inet.h>
 
+/** socket interfaces and implementations */
+namespace simple_socket {
+
 /**
  * @class Socket a simple client/host udp/tcp connection
  */
@@ -76,5 +79,7 @@ private:
   // holds host connection info
   sockaddr_in mHostInfo;
 };
-  
+
+} // namespace simple_socket
+
 #endif

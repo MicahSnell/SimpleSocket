@@ -14,6 +14,8 @@
 
 #include "Socket.h"
 
+namespace simple_socket {
+
 /**
  * @brief initializes a host socket
  * @param portNum the port number the socket will bind to
@@ -282,3 +284,5 @@ bool Socket::ListenAndAccept ()
   mSocketFD = newSocketFD;
   return true;
 }
+
+} // namespace simple_socket
