@@ -20,18 +20,18 @@ int main (int argc, char *argv[])
     return -1;
   }
 
-  Socket::eProtocol protocol;
+  simple_socket::Socket::eProtocol protocol;
   if (strcmp (argv[3], "tcp") == 0) {
-    protocol = Socket::TCP;
+    protocol = simple_socket::Socket::TCP;
   } else if (strcmp (argv[3], "udp") == 0) {
-    protocol = Socket::UDP;
+    protocol = simple_socket::Socket::UDP;
   } else {
     std::cerr << red << "Unknown protocol, options are tcp or udp" << reset << std::endl
               << std::endl;
     return -1;
   }
 
-  Socket socket (argv[1], atoi (argv[2]), protocol);
+  simple_socket::Socket socket (argv[1], atoi (argv[2]), protocol);
   std::vector<int> myData = { 8, 6, 7, 5, 3, 0, 9 };
   std::string myMsg ("Hello World!");
 

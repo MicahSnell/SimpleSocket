@@ -19,17 +19,17 @@ int main (int argc, char *argv[])
     return -1;
   }
 
-  Socket::eProtocol protocol;
+  simple_socket::Socket::eProtocol protocol;
   if (strcmp (argv[2], "tcp") == 0) {
-    protocol = Socket::TCP;
+    protocol = simple_socket::Socket::TCP;
   } else if (strcmp (argv[2], "udp") == 0) {
-    protocol = Socket::UDP;
+    protocol = simple_socket::Socket::UDP;
   } else {
     std::cerr << red << "Unknown protocol, options are tcp or udp" << reset << std::endl << std::endl;
     return -1;
   }
 
-  Socket socket (atoi (argv[1]), protocol);
+  simple_socket::Socket socket (atoi (argv[1]), protocol);
   std::vector<int> myDataBuffer;
   std::string myMsgBuffer;
 
