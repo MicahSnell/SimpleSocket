@@ -16,7 +16,7 @@ make debug
 ### Minimal Example
 A client socket that sends to localhost on port 54321 using TCP.
 ```cpp
-Socket socket ("localhost", 54321, Socket::TCP);
+simple_socket::Socket socket ("localhost", 54321, simple_socket::Socket::TCP);
 while (true) {
   while (socket.IsNotConnected ()) {
     sleep (1);
@@ -32,7 +32,7 @@ while (true) {
 
 A host socket that accepts TCP connections on port 54321.
 ```cpp
-Socket socket (54321, Socket::TCP);
+simple_socket::Socket socket (54321, simple_socket::Socket::TCP);
 while (true) {
   while (socket.IsNotConnected ()) {
     sleep (1);
