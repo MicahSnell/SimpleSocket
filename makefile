@@ -10,8 +10,8 @@ OBJS = $(SRCS:./src/%.cpp=$(OBJ_DIR)/%.o)
 AR = ar -crs
 RM = rm -f
 CXX = g++
-USER_FLAGS = -O3 -Wall -Wextra -Wno-unused -pedantic -ansi -std=c++11
-CXX_FLAGS = $(USER_FLAGS) $(USER_DEFINES) $(INC_DIR)
+CPP_FLAGS = -O3 -Wall -Wextra -Wno-unused -pedantic -ansi -std=c++11
+CXX_FLAGS = $(CPP_FLAGS) $(USER_DEFINES) $(INC_DIR)
 
 TARGET = ./lib/libSimpleSocket.a
 
