@@ -16,11 +16,6 @@
 
 namespace simple_socket {
 
-/**
- * @brief initializes a host socket
- * @param portNum the port number the socket will bind to
- * @param protocol the connection type of the socket
- */
 Socket::Socket (int portNum, eProtocol protocol)
   : mPort (portNum),
     mProtocol (protocol),
@@ -57,12 +52,6 @@ Socket::Socket (int portNum, eProtocol protocol)
   }
 }
 
-/**
- * @brief initializes a client socket
- * @param hostStr the hostname or ip to connect to
- * @param portNum the port number on the host to connect to
- * @param protocol the connection type of the socket
- */
 Socket::Socket (std::string hostStr, int portNum, eProtocol protocol)
   : mHostname (hostStr),
     mPort (portNum),
@@ -97,18 +86,11 @@ Socket::Socket (std::string hostStr, int portNum, eProtocol protocol)
   }
 }
 
-/**
- * @brief closes any open file descriptors
- */
 Socket::~Socket ()
 {
   CloseSocket ();
 }
 
-/**
- * @brief attempts to connect socket to client/host
- * @return true if successful
- */
 bool Socket::ConnectSocket ()
 {
   // socket was closed due to send/recv error, recreate
@@ -142,12 +124,6 @@ bool Socket::ConnectSocket ()
   return mIsConnected;
 }
 
-/**
- * @brief attempts to send data given in buffer
- * @param buffer a pointer to the data to be sent
- * @param numBytes the number of bytes to be sent
- * @return true if data is sent successfully
- */
 bool Socket::Send (const void *buffer, int numBytes)
 {
   bool isSuccess = true;
@@ -181,12 +157,6 @@ bool Socket::Send (const void *buffer, int numBytes)
   return isSuccess;
 }
 
-/**
- * @brief attempts to read data into given buffer
- * @param buffer a pointer to where data should be read to
- * @param numBytes the maximum number of bytes that can be read into @a buffer
- * @return true if successful
- */
 bool Socket::Recv (void *buffer, int numBytes)
 {
   bool isSuccess = true;
@@ -217,10 +187,6 @@ bool Socket::Recv (void *buffer, int numBytes)
   return isSuccess;
 }
 
-/**
- * @brief creates a socket based on the mProtocol
- * @return integer of the file descriptor for the created socket
- */
 int Socket::CreateSocket ()
 {
   int sockFD = -1;
@@ -238,11 +204,6 @@ int Socket::CreateSocket ()
   return sockFD;
 }
 
-/**
- * @brief binds mSocketFD to portNum
- * @param portNum the port number to bind the socket to
- * @return return code of bind call, 0 if successful
- */
 int Socket::BindSocket (int portNum)
 {
   sockaddr_in sockInfo;
@@ -253,9 +214,6 @@ int Socket::BindSocket (int portNum)
   return bind (mSocketFD, (sockaddr *) &sockInfo, sizeof (sockInfo));
 }
 
-/**
- * @brief closes the socket and sets as not connected
- */
 void Socket::CloseSocket ()
 {
   close (mSocketFD);
@@ -263,10 +221,6 @@ void Socket::CloseSocket ()
   mIsConnected = false;
 }
 
-/**
- * @brief listens and accepts TCP connections
- * @return true if successfully connected
- */
 bool Socket::ListenAndAccept ()
 {
   if (listen (mSocketFD, 5) == -1) {
