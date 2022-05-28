@@ -5,7 +5,7 @@ SRCS_SERVER = \
 	SocketServerTest.cpp \
 
 INC_DIR = \
-	-I../include \
+	-I../src \
 
 LIB_PATH = \
 	-L../lib \

@@ -2,7 +2,7 @@ SRCS = \
 	./src/Socket.cpp \
 
 INC_DIR = \
-	-I./include \
+	-I./src \
 
 OBJ_DIR = ./src/obj
 OBJS = $(SRCS:./src/%.cpp=$(OBJ_DIR)/%.o)
