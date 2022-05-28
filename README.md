@@ -8,12 +8,21 @@ make
 ```
 Which will create `./lib/libSimpleSocket.a` which you can then link in your project as `-lSimpleSocket`
 
-To build with debug output enabled:
+#### Example
+To build the example applications:
+```bash
+cd SimpleSocket/example
+make
+```
+Which will create `socket_server` and `socket_client`.
+
+#### Debug
+All binaries can be built with debug output enabled:
 ```bash
 make debug
 ```
 
-### Minimal Example
+## Minimal Sample
 A client socket that sends to localhost on port 54321 using TCP.
 ```cpp
 simple_socket::Socket socket ("localhost", 54321, simple_socket::Socket::TCP);
@@ -45,19 +54,6 @@ while (true) {
     std::cout << "Received: " << myInt << std::endl; // "Received: 42"
   }
 }
-```
-
-## Test
-To make the test applications:
-```bash
-cd SimpleSocket/test
-make
-```
-Which will create `socket_server` and `socket_client`.
-
-To build with debug output enabled:
-```bash
-make debug
 ```
 
 ## Documentation
