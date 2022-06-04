@@ -21,7 +21,7 @@ Socket::Socket (int portNum, eProtocol protocol)
     mProtocol (protocol),
     mSocketFD (CreateSocket ()),
     mIsConnected (false),
-    mIsHostSocket (mHostname.empty ())
+    mIsHostSocket (true)
 {
   try {
     if (mSocketFD == -1) {
@@ -58,7 +58,7 @@ Socket::Socket (std::string hostStr, int portNum, eProtocol protocol)
     mProtocol (protocol),
     mSocketFD (CreateSocket ()),
     mIsConnected (mProtocol == UDP),
-    mIsHostSocket (mHostname.empty ())
+    mIsHostSocket (false)
 {
   try {
     if (mSocketFD == -1) {
