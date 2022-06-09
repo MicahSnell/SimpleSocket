@@ -4,7 +4,8 @@ SRCS = \
 INC_DIR = \
 	-I./src \
 
-OBJ_DIR = ./src/obj
+BUILD_DIR = ./build
+OBJ_DIR = $(BUILD_DIR)/obj
 OBJS = $(SRCS:./src/%.cpp=$(OBJ_DIR)/%.o)
 
 AR = ar -crs
@@ -13,15 +14,18 @@ CXX = g++
 CPP_FLAGS = -O3 -Wall -Wextra -Wno-unused -pedantic -ansi -std=c++11
 CXX_FLAGS = $(CPP_FLAGS) $(USER_DEFINES) $(INC_DIR)
 
-TARGET = ./lib/libSimpleSocket.a
+TARGET = $(BUILD_DIR)/libSimpleSocket.a
 
-all: $(TARGET)
+all: $(OBJ_DIR) $(TARGET)
 	@echo "Build successful"
+
+$(OBJ_DIR):
+	@mkdir -p $(OBJ_DIR)
 
 $(TARGET): $(OBJS)
 	$(AR) $@ $(OBJS)
 
-$(OBJ_DIR)/%.o: ./src/%.cpp
+$(OBJS): $(SRCS)
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
 debug:
@@ -32,7 +36,11 @@ clean:
 	$(RM) $(OBJ_DIR)/*.o
 
 veryclean:
-	@echo "Removing object files"
-	$(RM) $(OBJ_DIR)/*.o
+	@$(MAKE) clean
 	@echo "Removing library file"
 	$(RM) $(TARGET)
+
+superclean:
+	@$(MAKE) veryclean
+	@echo "Removing build directory"
+	$(RM) -r $(BUILD_DIR)
