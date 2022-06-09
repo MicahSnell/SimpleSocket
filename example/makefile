@@ -8,7 +8,7 @@ INC_DIR = \
 	-I../src \
 
 LIB_PATH = \
-	-L../lib \
+	-L../build \
 
 USER_LIBS = \
 	-lSimpleSocket \
@@ -46,8 +46,7 @@ clean:
 	$(RM) $(OBJ_DIR)/*.o
 
 veryclean:
-	@echo "Removing object files"
-	$(RM) $(OBJ_DIR)/*.o
+	@$(MAKE) clean
 	@echo "Removing executables"
 	$(RM) $(TARGET_CLIENT)
 	$(RM) $(TARGET_SERVER)
