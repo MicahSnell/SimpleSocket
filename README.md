@@ -3,23 +3,23 @@ An easy to use C++ socket library that supports UDP and TCP connections.
 
 ## Build
 ```bash
-cd SimpleSocket
-make
+$ cd SimpleSocket
+$ make
 ```
-Which will create `./lib/libSimpleSocket.a` which you can then link in your project as `-lSimpleSocket`
+Which will create `./build/libSimpleSocket.a` which you can then link in your project as `-lSimpleSocket`
 
 #### Example
 To build the example applications:
 ```bash
-cd SimpleSocket/example
-make
+$ cd SimpleSocket/example
+$ make
 ```
 Which will create `socket_server` and `socket_client`.
 
 #### Debug
 All binaries can be built with debug output enabled:
 ```bash
-make debug
+$ make debug
 ```
 
 ## Minimal Sample
@@ -59,7 +59,7 @@ while (true) {
 ## Documentation
 Documentation is created with `doxygen`:
 ```bash
-cd SimpleSocket/doc
-doxygen Doxyfile
-<web browser> ./html/index.html
+$ cd SimpleSocket/doc
+$ doxygen Doxyfile
+$ <web browser> ./html/index.html
 ```
