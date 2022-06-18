@@ -44,12 +44,6 @@ public:
    * @brief closes any open file descriptors
    */
   ~Socket ();
-
-  /**
-   * @brief attempts to connect socket to client/host
-   * @return true if successful
-   */
-  bool ConnectSocket ();
  
   /**
    * @brief attempts to send data given in buffer
@@ -83,6 +77,11 @@ private:
   int CreateSocket ();
 
   /**
+   * @brief closes the socket and sets as not connected
+   */
+  void CloseSocket ();
+
+  /**
    * @brief binds mSocketFD to portNum
    * @param portNum the port number to bind the socket to
    * @return return code of bind call, 0 if successful
@@ -90,9 +89,10 @@ private:
   int BindSocket (int portNum);
 
   /**
-   * @brief closes the socket and sets as not connected
+   * @brief attempts to connect socket to client/host
+   * @return true if successful
    */
-  void CloseSocket ();
+  bool ConnectSocket ();
 
   /**
    * @brief listens and accepts TCP connections

@@ -91,41 +91,13 @@ Socket::~Socket ()
   CloseSocket ();
 }
 
-bool Socket::ConnectSocket ()
-{
-  // socket was closed due to send/recv error, recreate
-  if (mSocketFD == -1) {
-    mSocketFD = CreateSocket ();
-    if (mIsHostSocket) {
-      BindSocket (mPort);
-    }
-  }
-
-  switch (mProtocol) {
-  case TCP:
-    mIsConnected = mIsHostSocket ?
-      ListenAndAccept () :
-      connect (mSocketFD, (sockaddr *) &mHostInfo, sizeof (mHostInfo)) == 0;
-    break;
-  case UDP:
-    mIsConnected = true;
-    break;
-  default:
-    std::cerr << "Socket::ConnectSocket: unknown protocol, doing nothing\n";
-    break;
-  }
-
-  #ifdef DEBUG
-  if (IsNotConnected ()) {
-    perror ("Socket::ConnectSocket: failed to connect");
-  }
-  #endif
-
-  return mIsConnected;
-}
-
 bool Socket::Send (const void *buffer, int numBytes)
 {
+  while (IsNotConnected ()) {
+    sleep (1);
+    ConnectSocket ();
+  }
+
   bool isSuccess = true;
   try {
     int numBytesSent = -1;
@@ -159,6 +131,11 @@ bool Socket::Send (const void *buffer, int numBytes)
 
 bool Socket::Recv (void *buffer, int numBytes)
 {
+  while (IsNotConnected ()) {
+    sleep (1);
+    ConnectSocket ();
+  }
+
   bool isSuccess = true;
   try {
     int numBytesRead = -1;
@@ -204,6 +181,13 @@ int Socket::CreateSocket ()
   return sockFD;
 }
 
+void Socket::CloseSocket ()
+{
+  close (mSocketFD);
+  mSocketFD = -1;
+  mIsConnected = false;
+}
+
 int Socket::BindSocket (int portNum)
 {
   sockaddr_in sockInfo;
@@ -214,11 +198,37 @@ int Socket::BindSocket (int portNum)
   return bind (mSocketFD, (sockaddr *) &sockInfo, sizeof (sockInfo));
 }
 
-void Socket::CloseSocket ()
+bool Socket::ConnectSocket ()
 {
-  close (mSocketFD);
-  mSocketFD = -1;
-  mIsConnected = false;
+  // socket was closed due to send/recv error, recreate
+  if (mSocketFD == -1) {
+    mSocketFD = CreateSocket ();
+    if (mIsHostSocket) {
+      BindSocket (mPort);
+    }
+  }
+
+  switch (mProtocol) {
+  case TCP:
+    mIsConnected = mIsHostSocket ?
+      ListenAndAccept () :
+      connect (mSocketFD, (sockaddr *) &mHostInfo, sizeof (mHostInfo)) == 0;
+    break;
+  case UDP:
+    mIsConnected = true;
+    break;
+  default:
+    std::cerr << "Socket::ConnectSocket: unknown protocol, doing nothing\n";
+    break;
+  }
+
+  #ifdef DEBUG
+  if (IsNotConnected ()) {
+    perror ("Socket::ConnectSocket: failed to connect");
+  }
+  #endif
+
+  return mIsConnected;
 }
 
 bool Socket::ListenAndAccept ()
