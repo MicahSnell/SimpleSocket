@@ -36,53 +36,38 @@ int main (int argc, char *argv[])
   std::string myMsg ("Hello World!");
 
   while (true) {
-    while (socket.IsConnected ()) {
-      // send vector size
-      int numBytes = myData.size ();
-      if (socket.Send (&numBytes, sizeof (numBytes)) == false) {
-        std::cerr << red << "Socket failed to send size\n" << reset;
-      }
-
-      // send the vector
-      numBytes *= sizeof (int);
-      if (socket.Send (&myData[0], numBytes) == false) {
-        std::cerr << red << "Socket failed to send vector\n" << reset;
-      } else {
-        std::cout << "Socket sent values: ";
-        for (unsigned i = 0; i < myData.size (); ++i) {
-          std::cout << myData[i] << " ";
-        }
-        std::cout << std::endl;
-      }
-
-      // send string size
-      numBytes = myMsg.length ();
-      if (socket.Send (&numBytes, sizeof (numBytes)) == false) {
-        std::cerr << red << "Socket failed to send size\n" << reset;
-      }
-
-      // send the string
-      if (socket.Send (&myMsg[0], numBytes) == false) {
-        std::cerr << red << "Socket failed to send string\n" << reset;
-      } else {
-        std::cout << "Socket sent string: " + myMsg << std::endl;
-      }
-
-      sleep (2);
+    // send vector size
+    int numBytes = myData.size ();
+    if (socket.Send (&numBytes, sizeof (numBytes)) == false) {
+      std::cerr << red << "Socket failed to send size\n" << reset;
     }
 
-    #ifdef DEBUG
-    std::cout << "Connecting...\n";
-    #endif
-    while (socket.IsNotConnected ()) {
-      if (socket.ConnectSocket () == false) {
-        sleep (1);
+    // send the vector
+    numBytes *= sizeof (int);
+    if (socket.Send (&myData[0], numBytes) == false) {
+      std::cerr << red << "Socket failed to send vector\n" << reset;
+    } else {
+      std::cout << "Socket sent values: ";
+      for (unsigned i = 0; i < myData.size (); ++i) {
+        std::cout << myData[i] << " ";
       }
+      std::cout << std::endl;
     }
 
-    #ifdef DEBUG
-    std::cout << "Connected\n";
-    #endif
+    // send string size
+    numBytes = myMsg.length ();
+    if (socket.Send (&numBytes, sizeof (numBytes)) == false) {
+      std::cerr << red << "Socket failed to send size\n" << reset;
+    }
+
+    // send the string
+    if (socket.Send (&myMsg[0], numBytes) == false) {
+      std::cerr << red << "Socket failed to send string\n" << reset;
+    } else {
+      std::cout << "Socket sent string: " + myMsg << std::endl;
+    }
+
+    sleep (2);
   }
 
   return -1;

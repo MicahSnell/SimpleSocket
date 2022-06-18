@@ -34,55 +34,40 @@ int main (int argc, char *argv[])
   std::string myMsgBuffer;
 
   while (true) {
-    while (socket.IsConnected ()) {
-      // recv size of vector
-      int numBytes = 0;
-      if (socket.Recv (&numBytes, sizeof (numBytes)) == false) {
-        std::cerr << red << "Socket failed to recv numBytes\n" << reset;
-      }
-
-      // recv in vector
-      myDataBuffer.resize (numBytes);
-      numBytes *= sizeof (int);
-      if (socket.Recv (&myDataBuffer[0], numBytes) == false) {
-        std::cerr << red << "Socket failed to recv vector\n" << reset;
-      } else {
-        std::cout << "Socket recv values: ";
-        for (unsigned i = 0; i < myDataBuffer.size (); ++i) {
-          std::cout << myDataBuffer[i] << " ";
-        }
-        std::cout << std::endl;
-      }
-
-      // recv size of string
-      numBytes = 0;
-      if (socket.Recv (&numBytes, sizeof (numBytes)) == false) {
-        std::cerr << red << "Socket failed to recv number of bytes\n" << reset;
-      }
-
-      // recv the string
-      myMsgBuffer.resize (numBytes);
-      if (socket.Recv (&myMsgBuffer[0], numBytes) == false) {
-        std::cerr << red << "Socket failed to recv string\n" << reset;
-      } else {
-        std::cout << "Socket recv string: " + myMsgBuffer << std::endl;
-      }
-
-      sleep (2);
+    // recv size of vector
+    int numBytes = 0;
+    if (socket.Recv (&numBytes, sizeof (numBytes)) == false) {
+      std::cerr << red << "Socket failed to recv numBytes\n" << reset;
     }
 
-    #ifdef DEBUG
-    std::cout << "Connecting...\n";
-    #endif
-    while (socket.IsNotConnected ()) {
-      if (socket.ConnectSocket () == false) {
-        sleep (1);
+    // recv in vector
+    myDataBuffer.resize (numBytes);
+    numBytes *= sizeof (int);
+    if (socket.Recv (&myDataBuffer[0], numBytes) == false) {
+      std::cerr << red << "Socket failed to recv vector\n" << reset;
+    } else {
+      std::cout << "Socket recv values: ";
+      for (unsigned i = 0; i < myDataBuffer.size (); ++i) {
+        std::cout << myDataBuffer[i] << " ";
       }
+      std::cout << std::endl;
     }
 
-    #ifdef DEBUG
-    std::cout << "Connected\n";
-    #endif
+    // recv size of string
+    numBytes = 0;
+    if (socket.Recv (&numBytes, sizeof (numBytes)) == false) {
+      std::cerr << red << "Socket failed to recv number of bytes\n" << reset;
+    }
+
+    // recv the string
+    myMsgBuffer.resize (numBytes);
+    if (socket.Recv (&myMsgBuffer[0], numBytes) == false) {
+      std::cerr << red << "Socket failed to recv string\n" << reset;
+    } else {
+      std::cout << "Socket recv string: " + myMsgBuffer << std::endl;
+    }
+
+    sleep (2);
   }
 
   return -1;
