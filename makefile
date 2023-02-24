@@ -21,7 +21,7 @@ directories:
 	@mkdir -p $(OBJ_DIR) $(LIB_DIR)
 
 $(TARGET): $(OBJS)
-	$(AR) $(LIB_DIR)/$@ $(OBJS)
+	$(AR) $(LIB_DIR)/$@ $^
 
 $(OBJS): $(SRCS)
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
