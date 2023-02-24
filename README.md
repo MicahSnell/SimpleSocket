@@ -6,7 +6,7 @@ An easy to use C++ socket library that supports UDP and TCP connections.
 $ cd SimpleSocket
 $ make
 ```
-Which will create `./build/libSimpleSocket.a` which you can then link in your project as `-lSimpleSocket`
+Which will create `lib/libSimpleSocket.a` which you can then link in your project as `-lSimpleSocket`
 
 #### Example
 To build the example applications:

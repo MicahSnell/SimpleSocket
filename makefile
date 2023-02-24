@@ -1,35 +1,34 @@
-SRCS = \
-	./src/Socket.cpp \
+SRC_DIR = src
+LIB_DIR = lib
+OBJ_DIR = obj
+INC_DIR = -I$(SRC_DIR)
 
-INC_DIR = \
-	-I./src \
-
-BUILD_DIR = ./build
-OBJ_DIR = $(BUILD_DIR)/obj
-OBJS = $(SRCS:./src/%.cpp=$(OBJ_DIR)/%.o)
+SRCS = $(SRC_DIR)/Socket.cpp 
+OBJS = $(SRCS:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o)
 
 AR = ar -crs
 RM = rm -f
 CXX = g++
 CPP_FLAGS = -O3 -Wall -Wextra -Wno-unused -pedantic -ansi -std=c++11
-CXX_FLAGS = $(CPP_FLAGS) $(USER_DEFINES) $(INC_DIR)
+CXX_FLAGS = $(CPP_FLAGS) $(DEFINES) $(INC_DIR)
 
-TARGET = $(BUILD_DIR)/libSimpleSocket.a
+TARGET = libSimpleSocket.a
 
-all: $(OBJ_DIR) $(TARGET)
+all: directories $(TARGET)
 	@echo "Build successful"
 
-$(OBJ_DIR):
+directories:
 	@mkdir -p $(OBJ_DIR)
+	@mkdir -p $(LIB_DIR)
 
 $(TARGET): $(OBJS)
-	$(AR) $@ $(OBJS)
+	$(AR) $(LIB_DIR)/$@ $(OBJS)
 
 $(OBJS): $(SRCS)
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
 debug:
-	@$(MAKE) USER_DEFINES=-DDEBUG
+	@$(MAKE) DEFINES=-DDEBUG
 
 clean:
 	@echo "Removing object files"
@@ -42,5 +41,5 @@ veryclean:
 
 superclean:
 	@$(MAKE) veryclean
-	@echo "Removing build directory"
-	$(RM) -r $(BUILD_DIR)
+	@echo "Removing generated directories"
+	$(RM) -r $(LIB_DIR) $(OBJ_DIR)
