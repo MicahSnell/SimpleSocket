@@ -18,8 +18,7 @@ all: directories $(TARGET)
 	@echo "Build successful"
 
 directories:
-	@mkdir -p $(OBJ_DIR)
-	@mkdir -p $(LIB_DIR)
+	@mkdir -p $(OBJ_DIR) $(LIB_DIR)
 
 $(TARGET): $(OBJS)
 	$(AR) $(LIB_DIR)/$@ $(OBJS)
@@ -32,14 +31,14 @@ debug:
 
 clean:
 	@echo "Removing object files"
-	$(RM) $(OBJ_DIR)/*.o
+	@$(RM) $(OBJ_DIR)/*.o
 
 veryclean:
 	@$(MAKE) clean
 	@echo "Removing library file"
-	$(RM) $(TARGET)
+	@$(RM) $(TARGET)
 
-superclean:
+distclean:
 	@$(MAKE) veryclean
 	@echo "Removing generated directories"
-	$(RM) -r $(LIB_DIR) $(OBJ_DIR)
+	@$(RM) -r $(LIB_DIR) $(OBJ_DIR)
