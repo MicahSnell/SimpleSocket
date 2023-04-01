@@ -8,7 +8,7 @@ $ make
 ```
 Which will create `lib/libSimpleSocket.a` which you can then link in your project as `-lSimpleSocket`
 
-#### Example
+#### Examples
 To build the example applications:
 ```bash
 $ cd SimpleSocket/example
@@ -22,13 +22,12 @@ All binaries can be built with debug output enabled:
 $ make debug
 ```
 
-## Minimal Sample
+## Minimal Usage
 A client socket that sends to localhost on port 54321 using TCP.
 ```cpp
 simple_socket::Socket socket ("localhost", 54321, simple_socket::Socket::TCP);
 int myInt = 42;
 socket.Send (&myInt, sizeof (myInt));
-std::cout << "Sent: " << myInt << std::endl;
 ```
 
 A host socket that accepts TCP connections on port 54321.
