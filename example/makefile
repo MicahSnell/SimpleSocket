@@ -2,10 +2,10 @@ OBJ_DIR = ../obj
 INC_DIR = -I../src
 
 SRCS_CLIENT = SocketClientTest.cpp
-SRCS_SERVER = SocketServerTest.cpp
+OBJS_CLIENT := $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(SRCS_CLIENT))
 
-OBJS_CLIENT = $(SRCS_CLIENT:%.cpp=$(OBJ_DIR)/%.o)
-OBJS_SERVER = $(SRCS_SERVER:%.cpp=$(OBJ_DIR)/%.o)
+SRCS_SERVER = SocketServerTest.cpp
+OBJS_SERVER := $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(SRCS_SERVER))
 
 LIB_DIRS = -L../lib
 LIBS = -lSimpleSocket
@@ -18,8 +18,11 @@ CXX_FLAGS = $(CPP_FLAGS) $(DEFINES) $(INC_DIR)
 TARGET_CLIENT = socket_client
 TARGET_SERVER = socket_server
 
-all: $(TARGET_CLIENT) $(TARGET_SERVER)
+all: directories $(TARGET_CLIENT) $(TARGET_SERVER)
 	@echo "Build successful"
+
+directories:
+	@mkdir -p $(OBJ_DIR)
 
 $(TARGET_CLIENT): $(OBJS_CLIENT)
 	$(CXX) $(LIB_DIRS) -o $@ $^ $(LIBS)
@@ -35,12 +38,11 @@ debug:
 
 clean:
 	@echo "Removing object files"
-	@$(RM) $(OBJ_DIR)/*.o
+	$(RM) $(OBJ_DIR)/*.o
 
-veryclean:
+distclean:
 	@$(MAKE) clean
-	@echo "Removing object directory"
-	@$(RM) -r $(OBJ_DIR)
 	@echo "Removing executables"
-	@$(RM) $(TARGET_CLIENT) $(TARGET_SERVER)
-
+	$(RM) $(TARGET_CLIENT) $(TARGET_SERVER)
+	@echo "Removing directories"
+	$(RM) -r $(OBJ_DIR)
