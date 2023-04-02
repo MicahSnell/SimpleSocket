@@ -41,10 +41,16 @@ public:
   Socket (std::string hostStr, int portNum, eProtocol protocol);
 
   /**
+   * @brief move constructs a socket
+   * @param other rvalue reference to a socket to construct from
+   */
+  Socket (Socket&& other);
+
+  /**
    * @brief closes any open file descriptors
    */
   ~Socket ();
- 
+
   /**
    * @brief attempts to send data given in buffer
    * @param buffer a pointer to the data to be sent
@@ -68,6 +74,22 @@ public:
   /** @brief gets if this socket is currently not connected */
   bool IsNotConnected () const
   { return !mIsConnected; }
+
+  /**
+   * @brief move assignment operator
+   * @param other rvalue reference to a socket to assign from
+   */
+  Socket& operator= (Socket&& other);
+
+  /**
+   * @brief output operator
+   * @param socket socket to output
+   */
+  friend std::ostream& operator<< (std::ostream& out, const Socket& socket);
+
+  // disable copying
+  Socket (const Socket&) = delete;
+  Socket& operator= (const Socket&) = delete;
 
 private:
   /**

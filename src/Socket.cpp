@@ -31,7 +31,6 @@ Socket::Socket (int portNum, eProtocol protocol)
     switch (mProtocol) {
     case TCP:
       BindSocket (mPort);
-      mIsConnected = false;
       break;
     case UDP:
       mIsConnected = (BindSocket (mPort) == 0);
@@ -84,6 +83,19 @@ Socket::Socket (std::string hostStr, int portNum, eProtocol protocol)
               << std::endl;
     throw;
   }
+}
+
+Socket::Socket (Socket&& other)
+{
+  mHostname = std::move (other.mHostname);
+  mPort = std::move (other.mPort);
+  mProtocol = std::move (other.mProtocol);
+  mSocketFD = std::move (other.mSocketFD);
+  mIsConnected = std::move (other.mIsConnected);
+  mIsHostSocket = std::move (other.mIsHostSocket);
+  mHostInfo = std::move (other.mHostInfo);
+
+  other.mSocketFD = -1;
 }
 
 Socket::~Socket ()
@@ -164,6 +176,34 @@ bool Socket::Recv (void *buffer, int numBytes)
   return isSuccess;
 }
 
+Socket& Socket::operator= (Socket&& other)
+{
+  if (this == &other) return *this;
+  CloseSocket ();
+
+  mHostname = std::move (other.mHostname);
+  mPort = std::move (other.mPort);
+  mProtocol = std::move (other.mProtocol);
+  mSocketFD = std::move (other.mSocketFD);
+  mIsConnected = std::move (other.mIsConnected);
+  mIsHostSocket = std::move (other.mIsHostSocket);
+  mHostInfo = std::move (other.mHostInfo);
+
+  other.mSocketFD = -1;
+
+  return *this;
+}
+
+std::ostream& operator<< (std::ostream& out, const Socket& socket)
+{
+  out << "Socket (" << (socket.mIsHostSocket ? "" : "host: " + socket.mHostname + ", ")
+      << "port: " << socket.mPort << ", protocol: "
+      << (socket.mProtocol == simple_socket::Socket::TCP ? "TCP" : "UDP")
+      << ", file descriptor: " << socket.mSocketFD << ", connected: "
+      << socket.mIsConnected << ", is host: " << socket.mIsHostSocket << ")";
+  return out;
+}
+
 int Socket::CreateSocket ()
 {
   int sockFD = -1;
@@ -200,6 +240,8 @@ int Socket::BindSocket (int portNum)
 
 bool Socket::ConnectSocket ()
 {
+  if (IsConnected ()) return true;
+
   // socket was closed due to send/recv error, recreate
   if (mSocketFD == -1) {
     mSocketFD = CreateSocket ();
