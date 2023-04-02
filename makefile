@@ -31,7 +31,7 @@ debug:
 
 clean:
 	@echo "Removing object files"
-	$(RM) $(OBJ_DIR)/*.o
+	$(RM) $(OBJS)
 
 distclean:
 	@$(MAKE) clean

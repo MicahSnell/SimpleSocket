@@ -38,7 +38,7 @@ debug:
 
 clean:
 	@echo "Removing object files"
-	$(RM) $(OBJ_DIR)/*.o
+	$(RM) $(OBJS_CLIENT) $(OBJS_SERVER)
 
 distclean:
 	@$(MAKE) clean
