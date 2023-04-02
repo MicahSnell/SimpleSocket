@@ -1,4 +1,4 @@
-OBJ_DIR = obj
+OBJ_DIR = ../obj
 INC_DIR = -I../src
 
 SRCS_CLIENT = SocketClientTest.cpp
