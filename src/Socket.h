@@ -24,7 +24,7 @@ public:
     UDP,
     MAX_PROTOCOLS
   };
-      
+
   /**
    * @brief initializes a host socket
    * @param portNum the port number the socket will bind to
@@ -57,7 +57,7 @@ public:
    * @param numBytes the number of bytes to be sent
    * @return true if data is sent successfully
    */
-  bool Send (const void *buffer, int numBytes);
+  bool Send (const void* buffer, int numBytes);
 
   /**
    * @brief attempts to read data into given buffer
@@ -65,7 +65,7 @@ public:
    * @param numBytes the maximum number of bytes that can be read into @a buffer
    * @return true if successful
    */
-  bool Recv (void *buffer, int numBytes);
+  bool Recv (void* buffer, int numBytes);
 
   /** @brief gets if this socket is currently connected */
   bool IsConnected () const

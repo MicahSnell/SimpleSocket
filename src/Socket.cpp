@@ -25,28 +25,27 @@ Socket::Socket (int portNum, eProtocol protocol)
 {
   try {
     if (mSocketFD == -1) {
-      throw std::runtime_error ("Socket: failed to get file descriptor");
+      throw std::runtime_error ("failed to get file descriptor");
     }
 
     switch (mProtocol) {
-    case TCP:
-      BindSocket (mPort);
-      break;
-    case UDP:
-      mIsConnected = (BindSocket (mPort) == 0);
-      break;
-    default:
-      throw std::runtime_error ("Socket: unknown protocol");
-      break;
+      case TCP:
+        BindSocket (mPort);
+        break;
+      case UDP:
+        mIsConnected = (BindSocket (mPort) == 0);
+        break;
+      default:
+        throw std::runtime_error ("unknown protocol");
+        break;
     }
 
     #ifdef DEBUG
-    std::cout << "Socket: created host socket, is connected: "
-              << std::boolalpha << mIsConnected << std::endl;
+    std::cout << "Socket: created host socket, is connected: " << std::boolalpha
+              << mIsConnected << std::endl;
     #endif
-  } catch (std::exception &except) {
-    std::cerr << __FILE__ << ":" << __LINE__ << " caught exception: " << except.what ()
-              << std::endl;
+  } catch (std::exception& e) {
+    std::cerr << "Error (socket): " << e.what () << std::endl;
     throw;
   }
 }
@@ -61,26 +60,25 @@ Socket::Socket (std::string hostStr, int portNum, eProtocol protocol)
 {
   try {
     if (mSocketFD == -1) {
-      throw std::runtime_error ("Socket: failed to get file descriptor");
+      throw std::runtime_error ("failed to get file descriptor");
     }
 
     // get host info and set in sockaddr_in struct
-    hostent *hostEntry = gethostbyname (mHostname.c_str ());
-    if (hostEntry == nullptr) {
-      throw std::runtime_error ("Socket: error getting host info for " + mHostname);
+    hostent* hostEntry = gethostbyname (mHostname.c_str ());
+    if (! hostEntry) {
+      throw std::runtime_error ("failed to retrieve host info for " + mHostname);
     }
-    memset ((char *) &mHostInfo, 0, sizeof (mHostInfo));
+    memset ((char *)& mHostInfo, 0, sizeof (mHostInfo));
     mHostInfo.sin_family = AF_INET;
     mHostInfo.sin_port = htons (mPort);
     mHostInfo.sin_addr = *(in_addr *) hostEntry->h_addr;
 
     #ifdef DEBUG
-    std::cout << "Socket: created client socket, is connected: "
-              << std::boolalpha << mIsConnected << std::endl;
+    std::cout << "Socket: created client socket, is connected: " << std::boolalpha
+              << mIsConnected << std::endl;
     #endif
-  } catch (std::exception &except) {
-    std::cerr << __FILE__ << ":" << __LINE__ << " caught exception: " << except.what ()
-              << std::endl;
+  } catch (std::exception& e) {
+    std::cerr << "Error (socket): " << e.what () << std::endl;
     throw;
   }
 }
@@ -103,77 +101,58 @@ Socket::~Socket ()
   CloseSocket ();
 }
 
-bool Socket::Send (const void *buffer, int numBytes)
+bool Socket::Send (const void* buffer, int numBytes)
 {
   while (IsNotConnected ()) {
     sleep (1);
     ConnectSocket ();
   }
 
-  bool isSuccess = true;
   try {
     int numBytesSent = -1;
     switch (mProtocol) {
-    case TCP:
-      numBytesSent = send (mSocketFD, (char *) buffer, numBytes, MSG_NOSIGNAL);
-      break;
-    case UDP:
-      numBytesSent = sendto (mSocketFD, (char *) buffer, numBytes, 0, (sockaddr *) &mHostInfo,
-                             sizeof (mHostInfo ));
-      break;
-    default:
-      std::cerr << "Socket::Send: unknown protocol, doing nothing\n";
-      isSuccess = false;
-      break;
+      case TCP:
+        numBytesSent = send (mSocketFD, (char *) buffer, numBytes, MSG_NOSIGNAL);
+        break;
+      case UDP:
+        numBytesSent = sendto (mSocketFD, (char *) buffer, numBytes, 0,
+                               (sockaddr *)& mHostInfo, sizeof (mHostInfo));
+        break;
+      default:
+        break;
     }
 
     // if send returns error, of if TCP and sent 0, close to reconnect
     if ((numBytesSent == -1) || ((mProtocol == TCP) && (numBytesSent == 0))) {
-      std::cerr << "Socket::Send: failed to send\n";
       CloseSocket ();
-      isSuccess = false;
     }
-  } catch (std::exception &except) {
-    std::cerr << __FILE__ << ":" << __LINE__ << " caught exception: " << except.what ()
-              << std::endl;
-    isSuccess = false;
+  } catch (std::exception& e) {
+    std::cerr << "Error (socket): " << e.what () << std::endl;
+    return false;
   }
-  return isSuccess;
+  return true;
 }
 
-bool Socket::Recv (void *buffer, int numBytes)
+bool Socket::Recv (void* buffer, int numBytes)
 {
   while (IsNotConnected ()) {
     sleep (1);
     ConnectSocket ();
   }
 
-  bool isSuccess = true;
   try {
     int numBytesRead = -1;
-    switch (mProtocol) {
-    case TCP:
-    case UDP:
-      numBytesRead = read (mSocketFD, (char *) buffer, numBytes);
-      break;
-    default:
-      std::cerr << "Socket::Recv: unknown protocol, doing nothing\n";
-      isSuccess = false;
-      break;
-    }
+    numBytesRead = read (mSocketFD, (char *) buffer, numBytes);
 
     // if read returns error, or if TCP and read 0 close to reconnect
     if ((numBytesRead == -1) || ((mProtocol == TCP) && (numBytesRead == 0))) {
-      std::cerr << "Socket::Recv: failed to read\n";
       CloseSocket ();
-      isSuccess = false;
     }
-  } catch (std::exception &except) {
-    std::cerr << __FILE__ << ":" << __LINE__ << " caught exception: " << except.what ()
-              << std::endl;
-    isSuccess = false;
+  } catch (std::exception& e) {
+    std::cerr << "Error (socket): " << e.what () << std::endl;
+    return false;
   }
-  return isSuccess;
+  return true;
 }
 
 Socket& Socket::operator= (Socket&& other)
@@ -208,15 +187,14 @@ int Socket::CreateSocket ()
 {
   int sockFD = -1;
   switch (mProtocol) {
-  case TCP:
-    sockFD = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    break;
-  case UDP:
-    sockFD = socket (AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    break;
-  default:
-    std::cerr << "Socket::CreateSocket: unknown protocol\n";
-    break;
+    case TCP:
+      sockFD = socket (AF_INET, SOCK_STREAM, IPPROTO_TCP);
+      break;
+    case UDP:
+      sockFD = socket (AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+      break;
+    default:
+      break;
   }
   return sockFD;
 }
@@ -231,7 +209,7 @@ void Socket::CloseSocket ()
 int Socket::BindSocket (int portNum)
 {
   sockaddr_in sockInfo;
-  memset ((char *) &sockInfo, 0, sizeof (sockInfo));
+  memset ((char *)& sockInfo, 0, sizeof (sockInfo));
   sockInfo.sin_family = AF_INET;
   sockInfo.sin_port = htons (portNum);
   sockInfo.sin_addr.s_addr = htonl (INADDR_ANY);
@@ -251,17 +229,16 @@ bool Socket::ConnectSocket ()
   }
 
   switch (mProtocol) {
-  case TCP:
-    mIsConnected = mIsHostSocket ?
-      ListenAndAccept () :
-      connect (mSocketFD, (sockaddr *) &mHostInfo, sizeof (mHostInfo)) == 0;
-    break;
-  case UDP:
-    mIsConnected = true;
-    break;
-  default:
-    std::cerr << "Socket::ConnectSocket: unknown protocol, doing nothing\n";
-    break;
+    case TCP:
+      mIsConnected = mIsHostSocket ?
+        ListenAndAccept () :
+        (connect (mSocketFD, (sockaddr *)& mHostInfo, sizeof (mHostInfo)) == 0);
+      break;
+    case UDP:
+      mIsConnected = true;
+      break;
+    default:
+      break;
   }
 
   #ifdef DEBUG
@@ -275,19 +252,22 @@ bool Socket::ConnectSocket ()
 
 bool Socket::ListenAndAccept ()
 {
-  if (listen (mSocketFD, 5) == -1) {
-    std::cerr << "Socket::ListenAndAccept: listen failed\n";
+  try {
+    if (listen (mSocketFD, 5) == -1) {
+      throw std::runtime_error ("listen failed");
+    }
+
+    int newSocketFD = accept (mSocketFD, nullptr, nullptr);
+    if (newSocketFD == -1) {
+      throw std::runtime_error ("accept failed");
+    }
+
+    close (mSocketFD);
+    mSocketFD = newSocketFD;
+  } catch (std::exception& e) {
+    std::cerr << "Error (socket): " << e.what () << std::endl;
     return false;
   }
-
-  int newSocketFD = accept (mSocketFD, nullptr, nullptr);
-  if (newSocketFD == -1) {
-    std::cerr << "Socket::ListenAndAccept: accept failed\n";
-    return false;
-  }
-
-  close (mSocketFD);
-  mSocketFD = newSocketFD;
   return true;
 }
 
