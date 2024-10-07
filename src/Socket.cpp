@@ -124,10 +124,11 @@ bool Socket::Send (const void* buffer, int numBytes)
 
     // if send returns error, of if TCP and sent 0, close to reconnect
     if ((numBytesSent == -1) || ((mProtocol == TCP) && (numBytesSent == 0))) {
-      CloseSocket ();
+      throw std::runtime_error ("failed to send");
     }
   } catch (std::exception& e) {
     std::cerr << "Error (socket): " << e.what () << std::endl;
+    CloseSocket ();
     return false;
   }
   return true;
@@ -146,10 +147,11 @@ bool Socket::Recv (void* buffer, int numBytes)
 
     // if read returns error, or if TCP and read 0 close to reconnect
     if ((numBytesRead == -1) || ((mProtocol == TCP) && (numBytesRead == 0))) {
-      CloseSocket ();
+      throw std::runtime_error ("failed to receive");
     }
   } catch (std::exception& e) {
     std::cerr << "Error (socket): " << e.what () << std::endl;
+    CloseSocket ();
     return false;
   }
   return true;
