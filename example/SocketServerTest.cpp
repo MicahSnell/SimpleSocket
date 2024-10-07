@@ -32,11 +32,18 @@ int main (int argc, char** argv)
   }
 
   simple_socket::Socket socket (atoi (argv[1]), protocol);
+  int msgCount;
   std::vector<int> myValues;
   std::string myString;
 
   while (true) {
     try {
+      // recv message count
+      msgCount = -1;
+      if (! socket.Recv (&msgCount, sizeof (msgCount))) {
+        throw std::runtime_error ("failed to read message count");
+      }
+
       // recv vector size and values
       int numBytes = 0;
       if (! socket.Recv (&numBytes, sizeof (numBytes))) {
@@ -49,12 +56,6 @@ int main (int argc, char** argv)
         throw std::runtime_error ("failed to read vector");
       }
 
-      std::cout << "Received: ";
-      for (unsigned value : myValues) {
-        std::cout << value << " ";
-      }
-      std::cout << std::endl;
-
       // recv string size and values
       numBytes = 0;
       if (! socket.Recv (&numBytes, sizeof (numBytes))) {
@@ -66,11 +67,14 @@ int main (int argc, char** argv)
         throw std::runtime_error ("failed to read string");
       }
 
-      std::cout << "Received: " + myString << std::endl;
+      std::cout << "Received (" << msgCount << "):" << std::endl;
+      for (unsigned value : myValues) {
+        std::cout << value << " ";
+      }
+      std::cout << myString  << std::endl << std::endl;
     } catch (std::exception& e) {
       std::cerr << "Error (server): " << e.what () << std::endl;
     }
-    sleep (2);
   }
 
   return 1;

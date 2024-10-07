@@ -31,11 +31,18 @@ int main (int argc, char** argv)
   }
 
   simple_socket::Socket socket (argv[1], atoi (argv[2]), protocol);
+  int msgCount = -1;
   std::vector<int> myValues = { 8, 6, 7, 5, 3, 0, 9 };
   std::string myString ("Hello World!");
 
   while (true) {
     try {
+      // send message count
+      ++msgCount;
+      if (! socket.Send (&msgCount, sizeof (msgCount))) {
+        throw std::runtime_error ("failed to send message count");
+      }
+
       // send vector size and values
       int numBytes = myValues.size ();
       if (! socket.Send (&numBytes, sizeof (numBytes))) {
@@ -47,12 +54,6 @@ int main (int argc, char** argv)
         throw std::runtime_error ("failed to send vector");
       }
 
-      std::cout << "Sent: ";
-      for (unsigned value : myValues) {
-        std::cout << value << " ";
-      }
-      std::cout << std::endl;
-
       // send string size and values
       numBytes = myString.length ();
       if (! socket.Send (&numBytes, sizeof (numBytes))) {
@@ -63,7 +64,11 @@ int main (int argc, char** argv)
         throw std::runtime_error ("failed to send string");
       }
 
-      std::cout << "Sent: " + myString << std::endl;
+      std::cout << "Sent (" << msgCount << "): " << std::endl;
+      for (unsigned value : myValues) {
+        std::cout << value << " ";
+      }
+      std::cout << myString << std::endl << std::endl;
     } catch (std::exception& e) {
       std::cerr << "Error (client): " << e.what () << std::endl;
     }
