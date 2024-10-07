@@ -15,7 +15,6 @@ CXX_FLAGS = $(CPP_FLAGS) $(DEFINES) $(INC_DIR)
 TARGET = $(LIB_DIR)/libSimpleSocket.a
 
 all: directories $(TARGET)
-	@echo "Build successful"
 
 directories:
 	@mkdir -p $(OBJ_DIR) $(LIB_DIR)
@@ -30,12 +29,9 @@ debug:
 	@$(MAKE) DEFINES=-DDEBUG
 
 clean:
-	@echo "Removing object files"
 	$(RM) $(OBJS)
 
 distclean:
 	@$(MAKE) clean
-	@echo "Removing library file"
 	$(RM) $(TARGET)
-	@echo "Removing directories"
 	$(RM) -r $(LIB_DIR) $(OBJ_DIR)

@@ -19,7 +19,6 @@ TARGET_CLIENT = socket_client
 TARGET_SERVER = socket_server
 
 all: directories $(TARGET_CLIENT) $(TARGET_SERVER)
-	@echo "Build successful"
 
 directories:
 	@mkdir -p $(OBJ_DIR)
@@ -37,12 +36,9 @@ debug:
 	@$(MAKE) DEFINES=-DDEBUG
 
 clean:
-	@echo "Removing object files"
 	$(RM) $(OBJS_CLIENT) $(OBJS_SERVER)
 
 distclean:
 	@$(MAKE) clean
-	@echo "Removing executables"
 	$(RM) $(TARGET_CLIENT) $(TARGET_SERVER)
-	@echo "Removing directories"
 	$(RM) -r $(OBJ_DIR)
